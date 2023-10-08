@@ -31,6 +31,9 @@
 #include "inv_mpu.h"
 #include "key_led.h"
 #include "OLED.h"   
+#include <stdlib.h>
+#include <string.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -199,9 +202,46 @@ osThreadId miantaskHandle;
 osThreadId ADCtaskHandle;
 osThreadId keytaskHandle;
 osThreadId iictaskHandle;
+osSemaphoreId adc_semHandle;
+osSemaphoreId key_semHandle;
+osSemaphoreId iic_semHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
+
+// 全局变量，使用信号量来进行控制
+
+struct Data
+{
+// ADC采样数据，x1、y1是左手柄的x、y值，摇杆在中间时，两者均为2048左右
+// x2、y2是右手柄的x、y值，摇杆在中间时，两者均为2048左右
+// b1 b2是顶部左右两个电位器，电位器向中间旋转时，数值会增大
+uint16_t g_x1, g_x2, g_y1, g_y2, g_b1, g_b2;
+
+// 一共8+2+3的读取，用16位来表示，仅使用后13位
+// 后八位为key_left和key_right的表示
+// 前5位为switch和顶部key的表示
+uint16_t g_key_result;
+
+// 表示位置和当前的x、y方向上的角度
+// pos_x的范围为[420,850] pos_y的范围为[320, 610]
+// 角度x的范围为(-50, +50) 角度y的范围为(-80, +80)
+float g_pos_x,g_pos_y;
+float g_x,g_y;
+
+} global_data={0};
+
+
+void trans_func(struct Data d)
+{
+	
+	if(d.g_y1<1000)
+		printf("w");
+	else if(d.g_x1<1000)
+		printf("a");
+	else if(d.g_x1>3900)
+		printf("d");
+}
 
 /* USER CODE END FunctionPrototypes */
 
@@ -241,6 +281,19 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
+
+  /* Create the semaphores(s) */
+  /* definition and creation of adc_sem */
+  osSemaphoreDef(adc_sem);
+  adc_semHandle = osSemaphoreCreate(osSemaphore(adc_sem), 1);
+
+  /* definition and creation of key_sem */
+  osSemaphoreDef(key_sem);
+  key_semHandle = osSemaphoreCreate(osSemaphore(key_sem), 1);
+
+  /* definition and creation of iic_sem */
+  osSemaphoreDef(iic_sem);
+  iic_semHandle = osSemaphoreCreate(osSemaphore(iic_sem), 1);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
@@ -287,6 +340,10 @@ void MX_FREERTOS_Init(void) {
 void main_func(void const * argument)
 {
   /* USER CODE BEGIN main_func */
+	// 定义一些局部变量来暂存全局数据
+	struct Data local_data;
+	
+	{
 	// 两个大矩形来表示摇杆
 	draw_rect(9,39,33,63);
 	draw_point(21,51);
@@ -327,15 +384,50 @@ void main_func(void const * argument)
 	draw_key_line(17+85,20,LFLAG);
 	draw_key_line(21+85,23,DFLAG);
 	
+	osDelay(100);
+	
+	}
   /* Infinite loop */
   for(;;)
   {
 	
 		//OLED_operate_gram(PEN_CLEAR);//清缓存
+		if( xSemaphoreTake(adc_semHandle,portMAX_DELAY)==pdPASS)
+		{
+			if( xSemaphoreTake(key_semHandle,portMAX_DELAY)==pdPASS)
+			{
+				if( xSemaphoreTake(iic_semHandle,portMAX_DELAY)==pdPASS)
+				{
+					// 到达这里表示三个锁已经全部获取，可以暂存数据并用于后续输出
+					
+					memcpy(&local_data, &global_data ,sizeof(struct Data));
+					xSemaphoreGive(iic_semHandle);
+				}
+				else
+				{
+					continue;
+				}
+				xSemaphoreGive(key_semHandle);
+			}
+			else
+			{
+				continue;
+			}
+			xSemaphoreGive(adc_semHandle);
+		}
+		else
+		{
+			continue;
+		}
+		
+		// 然后执行发送函数
+		trans_func(local_data);
+		
 		Board_LED_Toggle;
+		osDelay(300);
 //		LED1_Toggle;
 //		LED2_Toggle;
-    osDelay(200);
+//    osDelay(200);
   }
   /* USER CODE END main_func */
 }
@@ -385,6 +477,23 @@ void ADC_func(void const * argument)
 		draw_point(x2,y2);
 		
 		OLED_refresh_gram();//全局刷新
+		
+		// 最后更新全局数据
+		if( xSemaphoreTake(adc_semHandle,portMAX_DELAY)==pdPASS)
+		{
+			global_data.g_x1 = ADC_Values[2];
+			global_data.g_x2 = ADC_Values[4];
+			global_data.g_y1 = ADC_Values[3];
+			global_data.g_y2 = ADC_Values[5];
+			global_data.g_b1 = ADC_Values[1];
+			global_data.g_b2 = ADC_Values[0];
+			xSemaphoreGive(adc_semHandle);
+		}
+		else
+		{
+			continue;
+		}
+		
 //		for(int i =0;i<6;i++)
 //		{
 //			OLED_printf(2, 0,"%d, %d\n",i,ADC_Values[i]);
@@ -416,7 +525,7 @@ void key_func(void const * argument)
   for(;;)
   {
 		key_result = 0;
-		
+		{
 		// 左侧4个按键
 		tmp = LKEY1;
 		key_result |= (tmp==1 ? (1<<7) : 0);
@@ -491,6 +600,7 @@ void key_func(void const * argument)
 			draw_point(122,3);
 		else
 			eraser_point(122,3);
+	}
 		
 		// 3个开关
 		key_result |= (SWITCH_TOTAL==1 ? (1<<13) : 0);
@@ -566,6 +676,17 @@ void key_func(void const * argument)
 			draw_point(82+2+4,17+2+4);
 		}
 		
+		
+		// 最后更新全局数据
+		if( xSemaphoreTake(key_semHandle,portMAX_DELAY)==pdPASS)
+		{
+			global_data.g_key_result = key_result;
+			xSemaphoreGive(key_semHandle);
+		}
+		else
+		{
+			continue;
+		}
 		//printf("%x\n",key_result);
 		//OLED_printf(4, 0,"%x",key_result);
 		//OLED_refresh_gram();//全局刷新
@@ -587,20 +708,22 @@ void iic_func(void const * argument)
   /* USER CODE BEGIN iic_func */
   /* Infinite loop */
 	float pos_x=630,pos_y=470;
-	float x,y,z;
+	float x,y,x_t,y_t,z_t;
 	draw_point(pos_x,pos_y);
   for(;;)
   {
 		
-		mpu_dmp_get_data(&x,&y,&z);
+		mpu_dmp_get_data(&x_t,&y_t,&z_t);
 		//printf("x=%f y=%f\n",x,y);
+		x = x_t;
+		y = y_t;
 		x = x>50?50:x;
 		x = x<-50?-50:x;
-		x = x/10;
+		x = x/30;
 		
 		y = y>80?80:y;
 		y = y<-80?-80:y;
-		y = y/10;
+		y = y/35;
 		
 		eraser_point((uint8_t)(pos_x/10),(uint8_t)(pos_y/10));
 		pos_x-=y;
@@ -618,6 +741,19 @@ void iic_func(void const * argument)
 		
 		//OLED_printf(0, 0,"%.2f %.2f %.2f",x,y,z);
 		//OLED_refresh_gram();//全局刷新
+		// 最后更新全局数据
+		if( xSemaphoreTake(iic_semHandle,portMAX_DELAY)==pdPASS)
+		{
+			global_data.g_pos_x = pos_x;
+			global_data.g_pos_y = pos_y;
+			global_data.g_x = x_t;
+			global_data.g_y = y_t;
+			xSemaphoreGive(iic_semHandle);
+		}
+		else
+		{
+			continue;
+		}
      
   }
   /* USER CODE END iic_func */

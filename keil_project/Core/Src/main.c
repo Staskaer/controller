@@ -95,19 +95,31 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
 	
-  /* USER CODE END SysInit */
-
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
+	/*
+	注意，每次生成代码之后，需要手动调整一下初始化顺序，让DMA在ADC之前完成初始化，否则会导致启动失败，原因未知
+	形式如下
+	MX_GPIO_Init();
 	MX_DMA_Init();
   MX_ADC1_Init();
   MX_I2C1_Init();
   MX_I2C2_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
+	*/
+	
+  /* USER CODE END SysInit */
+
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_DMA_Init();
+  MX_ADC1_Init();
+  MX_I2C1_Init();
+  MX_I2C2_Init();
+  MX_USART1_UART_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-	mpu_dmp_init();
 	OLED_init();
+	mpu_dmp_init();
 	
   /* USER CODE END 2 */
 
