@@ -118,8 +118,12 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-	OLED_init();
+	
 	mpu_dmp_init();
+	OLED_init();
+	HAL_Delay(200);
+	OLED_refresh_gram();
+	
 	
   /* USER CODE END 2 */
 

@@ -343,7 +343,6 @@ void main_func(void const * argument)
 	// 定义一些局部变量来暂存全局数据
 	struct Data local_data;
 	
-	{
 	// 两个大矩形来表示摇杆
 	draw_rect(9,39,33,63);
 	draw_point(21,51);
@@ -383,10 +382,9 @@ void main_func(void const * argument)
 	draw_key_line(25+85,20,RFLAG);
 	draw_key_line(17+85,20,LFLAG);
 	draw_key_line(21+85,23,DFLAG);
-	
 	osDelay(100);
 	
-	}
+	
   /* Infinite loop */
   for(;;)
   {
