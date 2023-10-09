@@ -1,5 +1,6 @@
 #include "user.h"
 #include "stdio.h"
+#include "key_led.h"
 
 /*
 struct Data
@@ -75,4 +76,27 @@ void trans_func(struct Data d)
 	else if(d.g_x1>3900)
 		printf("d");
 }
+
+/*
+
+另外，存在以下的宏可以用于LED显示，其中LED1和LED2仅在焊接上后才有效
+
+*************板载LED控制*************
+
+#define Board_LED_ON HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 1)
+#define Board_LED_OFF HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 1)
+#define Board_LED_Toggle HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin)
+
+*************LED1控制*************
+
+#define LED1_ON HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1)
+#define LED1_OFF HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0)
+#define LED1_Toggle HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin)
+
+*************LED2控制*************
+
+#define LED2_ON HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 1)
+#define LED2_OFF HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, 0)
+#define LED2_Toggle HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin)
+*/
 
