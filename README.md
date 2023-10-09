@@ -26,13 +26,10 @@
 ![功能演示](./docs/imgs/application.png)
 
 
-<video id="video" controls="" preload="none" poster="./docs/mp4/1.png">
-      <source id="mp4" src="./docs/mp4/1.mp4" type="video/mp4">
-</videos>
+https://github.com/Staskaer/controller/assets/78833215/4ca1a1b4-529e-425c-b339-4db427694dbb
 
-<video id="video" controls="" preload="none" poster="./docs/mp4/2.png">
-      <source id="mp4" src="./docs/mp4/2.mp4" type="video/mp4">
-</videos>
+
+https://github.com/Staskaer/controller/assets/78833215/c7a27981-384b-4ca1-a509-df4dbefb6739
 
 
 ### 相关工作
