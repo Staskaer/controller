@@ -21,6 +21,10 @@
 
 ![成品](./docs/imgs/final.png)
 
+![原理图](./docs/imgs/schematic.png)
+
+![PCB](./docs/imgs/PCB.png)
+
 ### 演示
 
 ![功能演示](./docs/imgs/application.png)
@@ -54,6 +58,26 @@ https://github.com/Staskaer/controller/assets/78833215/c7a27981-384b-4ca1-a509-d
 ### 材料清单（购买指南）
 
 这里主要介绍一下所使用到的元件，以及一些购买指南。常见元件可以在某宝上直接购买，具体的型号参见[这里](./docs/bom.md)
+
+### 硬件使用说明（重要！设计如何选购无线射频模块）
+
+无线射频模块要求是可以使用串口通信、发送数据的，最少需要4个引脚，即vcc、gnd、rx、tx
+
+![interface](docs/imgs/interface.png)
+
+其中顶部的4脚可以安装下图这种型号的zigbee模块
+
+![zigbee](docs/imgs/zigbee.png)
+
+而中间的排母可以安装下图这种型号的蓝牙模块，其丝印"0TRG50"中的"0"表示一个引脚，T、R分别表示tx、rx，G表示gnd，5表示5v
+
+![ble](docs/imgs/ble.png)
+
+而最后的排母则是一个通用的串口接口，可以安装任意的串口模块，其丝印"5VGTR"中的"5"表示5v，V、T、R分别表示3v3、tx、rx，G表示gnd
+
+**可以通过自行使用洞洞板焊接转接板、打样时修改PCB等方式来适配自己的模块。**
+
+![转接板](docs/imgs/trans.png)
 
 ### 软件使用说明（重要！涉及如何自定义发送数据）
 
