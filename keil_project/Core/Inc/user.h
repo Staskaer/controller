@@ -25,7 +25,7 @@ float g_x,g_y;
 
 
 // 串口配置初始化函数
-void trans_init();
+void trans_init(void);
 
 // 完成发送功能的函数
 void trans_func(struct Data d);

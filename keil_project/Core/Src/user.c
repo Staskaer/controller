@@ -28,7 +28,9 @@ float g_x,g_y;
 // 此函数会在开始时调用，可以用于通过串口配置模块功能
 void trans_init()
 {
-
+//	printf("start!\n");
+//	LED1_Toggle;
+//	LED2_Toggle;
 };
 
 
