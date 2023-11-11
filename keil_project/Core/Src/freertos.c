@@ -309,19 +309,19 @@ void MX_FREERTOS_Init(void) {
 
   /* Create the thread(s) */
   /* definition and creation of miantask */
-  osThreadDef(miantask, main_func, osPriorityNormal, 0, 128);
+  osThreadDef(miantask, main_func, osPriorityNormal, 0, 256);
   miantaskHandle = osThreadCreate(osThread(miantask), NULL);
 
   /* definition and creation of ADCtask */
-  osThreadDef(ADCtask, ADC_func, osPriorityNormal, 0, 128);
+  osThreadDef(ADCtask, ADC_func, osPriorityNormal, 0, 256);
   ADCtaskHandle = osThreadCreate(osThread(ADCtask), NULL);
 
   /* definition and creation of keytask */
-  osThreadDef(keytask, key_func, osPriorityNormal, 0, 128);
+  osThreadDef(keytask, key_func, osPriorityNormal, 0, 256);
   keytaskHandle = osThreadCreate(osThread(keytask), NULL);
 
   /* definition and creation of iictask */
-  osThreadDef(iictask, iic_func, osPriorityNormal, 0, 128);
+  osThreadDef(iictask, iic_func, osPriorityNormal, 0, 256);
   iictaskHandle = osThreadCreate(osThread(iictask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -422,6 +422,8 @@ void main_func(void const * argument)
 		trans_func(local_data);
 		
 		Board_LED_Toggle;
+		//char rs[300];
+		//vTaskList(rs);
 		osDelay(300);
 //		LED1_Toggle;
 //		LED2_Toggle;
