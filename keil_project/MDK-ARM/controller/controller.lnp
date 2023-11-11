@@ -15,7 +15,6 @@
 "controller\stm32f1xx_it.o"
 "controller\stm32f1xx_hal_msp.o"
 "controller\stm32f1xx_hal_timebase_tim.o"
-"controller\user.o"
 "controller\stm32f1xx_hal_gpio_ex.o"
 "controller\stm32f1xx_hal_adc.o"
 "controller\stm32f1xx_hal_adc_ex.o"
