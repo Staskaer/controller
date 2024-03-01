@@ -31,6 +31,7 @@
 #include "mpu6050.h"
 #include "inv_mpu.h"
 #include "OLED.h" 
+#include "user.h"
 int fputc(int ch, FILE *f)
 {
 	uint8_t temp[1] = {ch};
@@ -123,6 +124,8 @@ int main(void)
 	OLED_init();
 	HAL_Delay(200);
 	OLED_refresh_gram();
+	
+	trans_init();
 	
 	
   /* USER CODE END 2 */
